@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"os"
 	"projectsShowcase/internal/config"
+	"projectsShowcase/internal/lib/logger/sl"
+	"projectsShowcase/internal/storage/sqlite"
 )
 
 const (
@@ -20,6 +22,13 @@ func main() {
 
 	log.Info("initializing server", slog.String("address", cfg.Address))
 	log.Debug("logger debug mode enabled")
+
+	storage, err := sqlite.New(cfg.StoragePath)
+	if err != nil {
+		log.Error("failed to initialize storage", sl.Err(err))
+	}
+
+	_ = storage
 }
 
 // setupLogger returns a logger based on the environment.
