@@ -1,9 +1,12 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"os"
 	"projectsShowcase/internal/config"
+	"projectsShowcase/internal/http-server/middleware/logger"
 	"projectsShowcase/internal/lib/logger/sl"
 	"projectsShowcase/internal/storage/sqlite"
 )
@@ -28,7 +31,15 @@ func main() {
 		log.Error("failed to initialize storage", sl.Err(err))
 	}
 
-	_ = storage
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	//router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
+	router.Use(logger.New(log))
+
+	_ = router
 }
 
 // setupLogger returns a logger based on the environment.
