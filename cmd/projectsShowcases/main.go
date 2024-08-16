@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
+	"net/http"
 	"os"
+	"os/signal"
 	"projectsShowcase/internal/config"
+	"projectsShowcase/internal/http-server/handlers/application/save"
 	"projectsShowcase/internal/http-server/middleware/logger"
 	"projectsShowcase/internal/lib/logger/sl"
 	"projectsShowcase/internal/storage/sqlite"
+	"syscall"
+	"time"
 )
 
 const (
@@ -39,7 +45,45 @@ func main() {
 	router.Use(middleware.URLFormat)
 	router.Use(logger.New(log))
 
-	_ = router
+	router.Post("/applications", save.New(log, storage))
+
+	log.Info("starting server", slog.String("address", cfg.Address))
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error("failed to start server")
+		}
+	}()
+
+	log.Info("server started")
+
+	<-done
+	log.Info("stopping server")
+
+	// TODO: move timeout to config
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("failed to stop server", sl.Err(err))
+
+		return
+	}
+
+	// TODO: close storage
+
+	log.Info("server stopped")
 }
 
 // setupLogger returns a logger based on the environment.
