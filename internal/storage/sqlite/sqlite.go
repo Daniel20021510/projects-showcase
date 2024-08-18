@@ -188,3 +188,29 @@ func (s *Storage) GetApplication(id int64) (models.Application, error) {
 
 	return application, nil
 }
+
+// DeleteApplication deletes the request from the database by its ID.
+func (s *Storage) DeleteApplication(id int64) error {
+	const op = "storage.sqlite.DeleteApplication"
+
+	stmt, err := s.db.Prepare(`DELETE FROM applications WHERE id = ?`)
+	if err != nil {
+		return fmt.Errorf("%s: prepare statement: %w", op, err)
+	}
+
+	res, err := stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: failed to get rows affected: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no application found with ID %d", id)
+	}
+
+	return nil
+}

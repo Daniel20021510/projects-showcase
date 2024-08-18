@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"projectsShowcase/internal/config"
+	"projectsShowcase/internal/http-server/handlers/application/remove"
 	"projectsShowcase/internal/http-server/handlers/application/save"
 	"projectsShowcase/internal/http-server/middleware/logger"
 	"projectsShowcase/internal/lib/logger/sl"
@@ -46,6 +47,7 @@ func main() {
 	router.Use(logger.New(log))
 
 	router.Post("/applications", save.New(log, storage))
+	router.Delete("/applications/{id}", remove.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
