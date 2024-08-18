@@ -149,7 +149,7 @@ func (s *Storage) GetApplication(id int64) (models.Application, error) {
 	existing_solutions,
 	keywords,
 	interested_parties,
-	consultancy,
+	consultants,
 	additional_materials,
 	project_name,
 	status
