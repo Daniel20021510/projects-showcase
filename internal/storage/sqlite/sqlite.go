@@ -126,7 +126,7 @@ func (s *Storage) SaveApplication(
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return 0, fmt.Errorf("%s: failed to get last insert id: %w", op, err)
+		return 0, fmt.Errorf("%s: failed to getApproved last insert id: %w", op, err)
 	}
 
 	return id, nil
@@ -189,6 +189,70 @@ func (s *Storage) GetApplication(id int64) (models.Application, error) {
 	return application, nil
 }
 
+// GetApprovedApplications retrieves a list of approved applications from the database.
+func (s *Storage) GetApprovedApplications() ([]models.Application, error) {
+	const op = "storage.sqlite.GetApplication"
+
+	stmt, err := s.db.Prepare(`SELECT 
+	id,
+    applicant_name,
+	applicant_email,
+	applicant_phone,
+	position_and_organization,
+	project_duration,
+	project_level,
+	problem_holder,
+	project_goal,
+	barrier,
+	existing_solutions,
+	keywords,
+	interested_parties,
+	consultants,
+	additional_materials,
+	project_name
+    FROM applications WHERE status = ?
+	ORDER BY submission_date`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
+	}
+
+	var applications []models.Application
+
+	rows, err := stmt.Query("Допущена")
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var application models.Application
+		err = rows.Scan(
+			&application.ID,
+			&application.ApplicantName,
+			&application.ApplicantEmail,
+			&application.ApplicantPhone,
+			&application.PositionAndOrganization,
+			&application.ProjectDuration,
+			&application.ProjectLevel,
+			&application.ProblemHolder,
+			&application.ProjectGoal,
+			&application.Barrier,
+			&application.ExistingSolutions,
+			&application.Keywords,
+			&application.InterestedParties,
+			&application.Consultants,
+			&application.AdditionalMaterials,
+			&application.ProjectName,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("%s: scan row: %w", op, err)
+		}
+		applications = append(applications, application)
+	}
+
+	return applications, nil
+}
+
 // DeleteApplication deletes the request from the database by its ID.
 func (s *Storage) DeleteApplication(id int64) error {
 	const op = "storage.sqlite.DeleteApplication"
@@ -205,7 +269,7 @@ func (s *Storage) DeleteApplication(id int64) error {
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%s: failed to get rows affected: %w", op, err)
+		return fmt.Errorf("%s: failed to getApproved rows affected: %w", op, err)
 	}
 
 	if rowsAffected == 0 {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"projectsShowcase/internal/config"
+	"projectsShowcase/internal/http-server/handlers/application/getApproved"
 	"projectsShowcase/internal/http-server/handlers/application/remove"
 	"projectsShowcase/internal/http-server/handlers/application/save"
 	"projectsShowcase/internal/http-server/middleware/logger"
@@ -48,6 +49,7 @@ func main() {
 
 	router.Post("/applications", save.New(log, storage))
 	router.Delete("/applications/{id}", remove.New(log, storage))
+	router.Get("/applications/approved", getApproved.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
