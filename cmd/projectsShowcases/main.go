@@ -51,9 +51,16 @@ func main() {
 
 	router.Post("/applications", save.New(log, storage))
 	router.Get("/applications/approved", getApproved.New(log, storage))
-	router.Get("/applications", getAll.New(log, storage))
-	router.Patch("/applications/{id}", updateStatus.New(log, storage))
-	router.Delete("/applications/{id}", remove.New(log, storage))
+
+	router.Route("/admin", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("projects-showcase", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+
+		r.Get("/applications", getAll.New(log, storage))
+		r.Patch("/applications/{id}", updateStatus.New(log, storage))
+		r.Delete("/applications/{id}", remove.New(log, storage))
+	})
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
