@@ -302,6 +302,32 @@ func (s *Storage) GetAllApplications() ([]models.Application, error) {
 	return applications, nil
 }
 
+// UpdateApplicationStatus updates the status of the application in the database.
+func (s *Storage) UpdateApplicationStatus(id int64, status string) error {
+	const op = "storage.sqlite.UpdateApplication"
+
+	stmt, err := s.db.Prepare(`UPDATE applications SET status = ? WHERE id = ?`)
+	if err != nil {
+		return fmt.Errorf("%s: prepare statement: %w", op, err)
+	}
+
+	res, err := stmt.Exec(status, id)
+	if err != nil {
+		return fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: failed to getApproved rows affected: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no application found with ID %d", id)
+	}
+
+	return nil
+}
+
 // DeleteApplication deletes the request from the database by its ID.
 func (s *Storage) DeleteApplication(id int64) error {
 	const op = "storage.sqlite.DeleteApplication"

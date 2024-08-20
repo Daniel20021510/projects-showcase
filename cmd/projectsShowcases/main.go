@@ -13,6 +13,7 @@ import (
 	"projectsShowcase/internal/http-server/handlers/application/getApproved"
 	"projectsShowcase/internal/http-server/handlers/application/remove"
 	"projectsShowcase/internal/http-server/handlers/application/save"
+	"projectsShowcase/internal/http-server/handlers/application/updateStatus"
 	"projectsShowcase/internal/http-server/middleware/logger"
 	"projectsShowcase/internal/lib/logger/sl"
 	"projectsShowcase/internal/storage/sqlite"
@@ -51,6 +52,7 @@ func main() {
 	router.Post("/applications", save.New(log, storage))
 	router.Get("/applications/approved", getApproved.New(log, storage))
 	router.Get("/applications", getAll.New(log, storage))
+	router.Patch("/applications/{id}", updateStatus.New(log, storage))
 	router.Delete("/applications/{id}", remove.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
