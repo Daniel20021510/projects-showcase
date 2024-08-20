@@ -253,7 +253,7 @@ func (s *Storage) GetApprovedApplications() ([]models.Application, error) {
 	return applications, nil
 }
 
-// GetApprovedApplications retrieves a list of approved applications from the database.
+// GetAllApplications retrieves a list of all applications from the database ordered by status and submission date.
 func (s *Storage) GetAllApplications() ([]models.Application, error) {
 	const op = "storage.sqlite.GetAllApplications"
 
