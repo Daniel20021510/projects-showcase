@@ -191,7 +191,7 @@ func (s *Storage) GetApplication(id int64) (models.Application, error) {
 
 // GetApprovedApplications retrieves a list of approved applications from the database.
 func (s *Storage) GetApprovedApplications() ([]models.Application, error) {
-	const op = "storage.sqlite.GetApplication"
+	const op = "storage.sqlite.GetApprovedApplications"
 
 	stmt, err := s.db.Prepare(`SELECT 
 	id,
@@ -243,6 +243,55 @@ func (s *Storage) GetApprovedApplications() ([]models.Application, error) {
 			&application.Consultants,
 			&application.AdditionalMaterials,
 			&application.ProjectName,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("%s: scan row: %w", op, err)
+		}
+		applications = append(applications, application)
+	}
+
+	return applications, nil
+}
+
+// GetApprovedApplications retrieves a list of approved applications from the database.
+func (s *Storage) GetAllApplications() ([]models.Application, error) {
+	const op = "storage.sqlite.GetAllApplications"
+
+	stmt, err := s.db.Prepare(`SELECT * FROM applications 
+         ORDER BY CASE WHEN status = 'Допущена' THEN 2 WHEN status = 'Удалена' THEN 1 WHEN status = 'На расмотрении' THEN 0 END, submission_date`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
+	}
+
+	var applications []models.Application
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var application models.Application
+		err = rows.Scan(
+			&application.ID,
+			&application.ApplicantName,
+			&application.ApplicantEmail,
+			&application.ApplicantPhone,
+			&application.PositionAndOrganization,
+			&application.ProjectDuration,
+			&application.ProjectLevel,
+			&application.ProblemHolder,
+			&application.ProjectGoal,
+			&application.Barrier,
+			&application.ExistingSolutions,
+			&application.Keywords,
+			&application.InterestedParties,
+			&application.Consultants,
+			&application.AdditionalMaterials,
+			&application.ProjectName,
+			&application.Status,
+			&application.SubmissionDate,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("%s: scan row: %w", op, err)

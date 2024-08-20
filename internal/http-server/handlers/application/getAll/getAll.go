@@ -1,4 +1,4 @@
-package getApproved
+package getAll
 
 import (
 	"github.com/go-chi/chi/v5/middleware"
@@ -15,29 +15,29 @@ type Response struct {
 	Applications []models.Application `json:"applications,omitempty"`
 }
 
-type ApprovedApplicationsGetter interface {
-	GetApprovedApplications() ([]models.Application, error)
+type AllApplicationsGetter interface {
+	GetAllApplications() ([]models.Application, error)
 }
 
-func New(log *slog.Logger, approvedApplicationsGetter ApprovedApplicationsGetter) http.HandlerFunc {
+func New(log *slog.Logger, approvedApplicationsGetter AllApplicationsGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.application.getApproved.New"
+		const op = "handlers.application.getAll.New"
 
 		log = log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		applications, err := approvedApplicationsGetter.GetApprovedApplications()
+		applications, err := approvedApplicationsGetter.GetAllApplications()
 		if err != nil {
-			log.Error("failed to get approved applications", sl.Err(err))
+			log.Error("failed to get all applications", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("failed to get approved applications"))
+			render.JSON(w, r, resp.Error("failed to get all applications"))
 
 			return
 		}
 
-		log.Info("get approved applications")
+		log.Info("get all applications")
 
 		responseOK(w, r, applications)
 	}
