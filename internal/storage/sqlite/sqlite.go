@@ -328,6 +328,68 @@ func (s *Storage) UpdateApplicationStatus(id int64, status string) error {
 	return nil
 }
 
+// GetApplicationByID returns the request by its ID
+func (s *Storage) GetApplicationByID(id int64) (*models.Application, error) {
+	const op = "storage.sqlite.GetApplicationByID"
+
+	stmt, err := s.db.Prepare(`SELECT 
+		id,
+		applicant_name,
+		applicant_email,
+		applicant_phone,
+		position_and_organization,
+		project_duration,
+		project_level,
+		problem_holder,
+		project_goal,
+		barrier,
+		existing_solutions,
+		keywords,
+		interested_parties,
+		consultants,
+		additional_materials,
+		project_name,
+		status,
+		submission_date
+		FROM applications WHERE id = ?`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
+	}
+	defer stmt.Close()
+
+	var application models.Application
+
+	err = stmt.QueryRow(id).Scan(
+		&application.ID,
+		&application.ApplicantName,
+		&application.ApplicantEmail,
+		&application.ApplicantPhone,
+		&application.PositionAndOrganization,
+		&application.ProjectDuration,
+		&application.ProjectLevel,
+		&application.ProblemHolder,
+		&application.ProjectGoal,
+		&application.Barrier,
+		&application.ExistingSolutions,
+		&application.Keywords,
+		&application.InterestedParties,
+		&application.Consultants,
+		&application.AdditionalMaterials,
+		&application.ProjectName,
+		&application.Status,
+		&application.SubmissionDate,
+	)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrApplicationNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+
+	return &application, nil
+}
+
 // DeleteApplication deletes the request from the database by its ID.
 func (s *Storage) DeleteApplication(id int64) error {
 	const op = "storage.sqlite.DeleteApplication"
