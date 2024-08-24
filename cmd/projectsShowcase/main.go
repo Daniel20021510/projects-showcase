@@ -52,7 +52,7 @@ func main() {
 
 	router.Post("/applications", save.New(log, storage))
 	router.Get("/applications/approved", getApproved.New(log, storage))
-	router.Get("/applications/{id}}", getByID.New(log, storage))
+	router.Get("/applications/{id}", getByID.New(log, storage))
 
 	router.Route("/admin", func(r chi.Router) {
 		r.Use(middleware.BasicAuth("projects-showcase", map[string]string{
