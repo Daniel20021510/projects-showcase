@@ -11,6 +11,7 @@ import (
 	"projectsShowcase/internal/config"
 	"projectsShowcase/internal/http-server/handlers/application/getAll"
 	"projectsShowcase/internal/http-server/handlers/application/getApproved"
+	"projectsShowcase/internal/http-server/handlers/application/getByID"
 	"projectsShowcase/internal/http-server/handlers/application/remove"
 	"projectsShowcase/internal/http-server/handlers/application/save"
 	"projectsShowcase/internal/http-server/handlers/application/updateStatus"
@@ -51,6 +52,7 @@ func main() {
 
 	router.Post("/applications", save.New(log, storage))
 	router.Get("/applications/approved", getApproved.New(log, storage))
+	router.Get("/applications/{id}}", getByID.New(log, storage))
 
 	router.Route("/admin", func(r chi.Router) {
 		r.Use(middleware.BasicAuth("projects-showcase", map[string]string{
