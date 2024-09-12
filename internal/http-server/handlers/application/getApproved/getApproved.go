@@ -12,7 +12,7 @@ import (
 
 type Response struct {
 	resp.Response
-	Applications []models.Application `json:"applications,omitempty"`
+	Applications []models.ApprovedApplication `json:"applications,omitempty"`
 }
 
 type ApprovedApplicationsGetter interface {
@@ -29,6 +29,22 @@ func New(log *slog.Logger, approvedApplicationsGetter ApprovedApplicationsGetter
 		)
 
 		applications, err := approvedApplicationsGetter.GetApprovedApplications()
+		outApplications := []models.ApprovedApplication{}
+
+		for _, application := range applications {
+			outApplications = append(
+				outApplications,
+				models.ApprovedApplication{
+					ProblemHolder:     application.ProblemHolder,
+					ProjectGoal:       application.ProjectGoal,
+					Barrier:           application.Barrier,
+					ExistingSolutions: application.ExistingSolutions,
+					Keywords:          application.Keywords,
+					ProjectName:       application.ProjectName,
+					ProjectLevel:      application.ProjectLevel,
+				})
+		}
+
 		if err != nil {
 			log.Error("failed to get approved applications", sl.Err(err))
 
@@ -39,11 +55,11 @@ func New(log *slog.Logger, approvedApplicationsGetter ApprovedApplicationsGetter
 
 		log.Info("get approved applications")
 
-		responseOK(w, r, applications)
+		responseOK(w, r, outApplications)
 	}
 }
 
-func responseOK(w http.ResponseWriter, r *http.Request, applications []models.Application) {
+func responseOK(w http.ResponseWriter, r *http.Request, applications []models.ApprovedApplication) {
 	render.JSON(w, r, Response{
 		Response:     resp.OK(),
 		Applications: applications,

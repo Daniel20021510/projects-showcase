@@ -22,3 +22,13 @@ type Application struct {
 	Status                  string
 	SubmissionDate          time.Time
 }
+
+type ApprovedApplication struct {
+	ProblemHolder     string
+	ProjectGoal       string
+	Barrier           string
+	ExistingSolutions string
+	Keywords          string
+	ProjectName       string
+	ProjectLevel      string
+}
