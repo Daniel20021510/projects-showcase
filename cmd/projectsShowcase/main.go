@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
 	"os"
@@ -20,6 +18,10 @@ import (
 	"projectsShowcase/internal/storage/sqlite"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 const (
@@ -43,6 +45,16 @@ func main() {
 	}
 
 	router := chi.NewRouter()
+
+	corsOptions := cors.Options{
+        AllowedOrigins:   []string{"http://localhost:3000"},
+        AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+        AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+        ExposedHeaders:   []string{"Link"},
+        AllowCredentials: true,
+        MaxAge:           300,
+       }
+       router.Use(cors.Handler(corsOptions))
 
 	router.Use(middleware.RequestID)
 	//router.Use(middleware.Logger)
